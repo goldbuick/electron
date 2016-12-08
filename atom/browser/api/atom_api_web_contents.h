@@ -20,8 +20,8 @@
 
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
-#include "ui/events/gesture_detection/filtered_gesture_provider.h"
-#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
+// #include "ui/events/gesture_detection/filtered_gesture_provider.h"
+// #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
 
 namespace content {
@@ -55,8 +55,7 @@ namespace api {
 
 class WebContents : public mate::TrackableObject<WebContents>,
                     public CommonWebContentsDelegate,
-                    public content::WebContentsObserver,
-                    public ui::GestureProviderClient {
+                    public content::WebContentsObserver {
  public:
   enum Type {
     BACKGROUND_PAGE,  // A DevTools extension background page.
@@ -346,11 +345,6 @@ class WebContents : public mate::TrackableObject<WebContents>,
                              const base::ListValue& args,
                              IPC::Message* message);
 
-  // gesture support from SendInputEvent
-  void OnInputEventAck(const content::InputEventAck& ack);
-  // ui::GestureProviderClient implementation.
-  void OnGestureEvent(const ui::GestureEventData& gesture) override;
-
   v8::Global<v8::Value> session_;
   v8::Global<v8::Value> devtools_web_contents_;
   v8::Global<v8::Value> debugger_;
@@ -371,9 +365,6 @@ class WebContents : public mate::TrackableObject<WebContents>,
 
   // Whether to enable devtools.
   bool enable_devtools_;
-
-  // Gesture recognition
-  std::unique_ptr<ui::FilteredGestureProvider> gesture_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContents);
 };

@@ -71,8 +71,6 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/display/screen.h"
 
-#include "content/common/input_messages.h"
-
 #if !defined(OS_MACOSX)
 #include "ui/aura/window.h"
 #endif
@@ -355,16 +353,6 @@ void WebContents::InitWithSessionAndOptions(v8::Isolate* isolate,
     if (owner_window)
       SetOwnerWindow(owner_window);
   }
-
-  ui::GestureProvider::Config config =
-      ui::GetGestureProviderConfig(ui::GestureProviderConfigType::CURRENT_PLATFORM);
-  config.gesture_begin_end_types_enabled = false;
-  config.gesture_detector_config.swipe_enabled = false;
-  config.gesture_detector_config.two_finger_tap_enabled = false;
-
-  gesture_provider_.reset(new ui::FilteredGestureProvider(config, this));
-  gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
-  gesture_provider_->SetDoubleTapSupportForPageEnabled(true);
 
   Init(isolate);
   AttachAsUserData(web_contents);
@@ -781,8 +769,6 @@ bool WebContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AtomViewHostMsg_Message, OnRendererMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AtomViewHostMsg_Message_Sync,
                                     OnRendererMessageSync)
-    IPC_MESSAGE_HANDLER_CODE(InputHostMsg_HandleInputEvent_ACK, OnInputEventAck,
-      handled = false)
     IPC_MESSAGE_HANDLER_CODE(ViewHostMsg_SetCursor, OnCursorChange,
       handled = false)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1280,15 +1266,10 @@ void WebContents::SendInputEvent(v8::Isolate* isolate,
   } else if (blink::WebInputEvent::isTouchEventType(type)) {
     blink::WebTouchEvent touch_event;
     if (mate::ConvertFromV8(isolate, input_event, &touch_event)) {
-      touch_event.uniqueTouchEventId = ui::GetNextTouchEventId();
-
-      auto result = gesture_provider_->OnTouchEvent(content::MotionEventWeb(touch_event));
-      if (result.succeeded) {
-        touch_event.movedBeyondSlopRegion = result.moved_beyond_slop_region;
-        const auto host_impl = static_cast<content::RenderWidgetHostImpl*>(host);
-        if (host_impl) host_impl->ForwardTouchEventWithLatencyInfo(touch_event, ui::LatencyInfo());
+      const auto host_impl = static_cast<content::RenderWidgetHostImpl*>(host);
+      if (host_impl) {
+        host_impl->ForwardEmulatedTouchEvent(touch_event, true);
       }
-
       return;
     }
   }
@@ -1648,27 +1629,6 @@ void WebContents::OnRendererMessageSync(const base::string16& channel,
                                         IPC::Message* message) {
   // webContents.emit(channel, new Event(sender, message), args...);
   EmitWithSender(base::UTF16ToUTF8(channel), web_contents(), message, args);
-}
-
-// gesture support from SendInputEvent
-void WebContents::OnInputEventAck(const content::InputEventAck& ack) {
-  if (!blink::WebInputEvent::isTouchEventType(ack.type)) return;
-  const bool event_consumed =
-    ack.state == content::INPUT_EVENT_ACK_STATE_CONSUMED;
-  gesture_provider_->OnTouchEventAck(ack.unique_touch_event_id, event_consumed);
-}
-  
-// ui::GestureProviderClient implementation.
-void WebContents::OnGestureEvent(const ui::GestureEventData& gesture) {
-  const auto view = web_contents()->GetRenderWidgetHostView();
-  if (!view) return;
-  const auto host = view->GetRenderWidgetHost();
-  if (!host) return;
-  const auto host_impl = static_cast<content::RenderWidgetHostImpl*>(host);
-  if (!host_impl) return;
-  blink::WebGestureEvent gesture_event =
-      ui::CreateWebGestureEventFromGestureEventData(gesture);
-  host_impl->ForwardGestureEventWithLatencyInfo(gesture_event, ui::LatencyInfo());
 }
 
 // static

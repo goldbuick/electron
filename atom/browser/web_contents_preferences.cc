@@ -223,8 +223,10 @@ void WebContentsPreferences::OverrideWebkitPrefs(
     return;
 
   bool b;
-  if (self->web_preferences_.GetBoolean("touch_enabled", &b))
-    prefs->touch_enabled = b;
+  // always touch_enabled
+  prefs->touch_enabled = true;
+  // if (self->web_preferences_.GetBoolean("touch_enabled", &b))
+  //   prefs->touch_enabled = b;
   if (self->web_preferences_.GetBoolean("javascript", &b))
     prefs->javascript_enabled = b;
   if (self->web_preferences_.GetBoolean("images", &b))
