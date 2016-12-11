@@ -79,25 +79,25 @@ def main():
   rm_rf(DIST_DIR)
   os.makedirs(DIST_DIR)
 
-  # force_build()
-  # create_symbols()
+  force_build()
+  create_symbols()
   copy_binaries()
-  # copy_chrome_binary('chromedriver')
-  # copy_chrome_binary('mksnapshot')
-  # copy_license()
+  copy_chrome_binary('chromedriver')
+  copy_chrome_binary('mksnapshot')
+  copy_license()
 
-  # if PLATFORM != 'win32':
-  #   copy_api_json_schema()
+  if PLATFORM != 'win32':
+    copy_api_json_schema()
 
-  # if PLATFORM == 'linux':
-  #   strip_binaries()
+  if PLATFORM == 'linux':
+    strip_binaries()
 
-  # create_version()
-  # create_dist_zip()
-  # create_chrome_binary_zip('chromedriver', get_chromedriver_version())
-  # create_chrome_binary_zip('mksnapshot', ELECTRON_VERSION)
-  # create_ffmpeg_zip()
-  # create_symbols_zip()
+  create_version()
+  create_dist_zip()
+  create_chrome_binary_zip('chromedriver', get_chromedriver_version())
+  create_chrome_binary_zip('mksnapshot', ELECTRON_VERSION)
+  create_ffmpeg_zip()
+  create_symbols_zip()
 
 
 def force_build():
