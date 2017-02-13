@@ -295,18 +295,18 @@ struct Converter<blink::WebTouchPoint> {
     out->tiltX = 0;
     out->tiltY = 0;
     out->force = 1.f;
-    out->radiusX = 16.f;
-    out->radiusY = 16.f;
     out->rotationAngle = 0.f;
+    out->pointerType = blink::WebPointerProperties::PointerType::Touch;
 
     // core set of values to set
-    dict.Get("id", &out->id);
-    dict.Get("state", &out->state);
-    dict.Get("clientX", &out->position.x);
-    dict.Get("clientY", &out->position.y);
-    dict.Get("screenX", &out->screenPosition.x);
-    dict.Get("screenY", &out->screenPosition.y);
-    out->pointerType = blink::WebPointerProperties::PointerType::Touch;
+    if (!dict.Get("id", &out->id)) out->id = 0;
+    if (!dict.Get("state", &out->state)) out->state = blink::WebTouchPoint::StateStationary;
+    if (!dict.Get("radiusX", &out->radiusX)) out->radiusX = 16.f;
+    if (!dict.Get("radiusY", &out->radiusY)) out->radiusY = 16.f;
+    if (!dict.Get("clientX", &out->position.x)) out->position.x = 0;
+    if (!dict.Get("clientY", &out->position.y)) out->position.y = 0;
+    if (!dict.Get("screenX", &out->screenPosition.x)) out->screenPosition.x = 0;
+    if (!dict.Get("screenY", &out->screenPosition.y)) out->screenPosition.y = 0;
 
     return true;
   }
