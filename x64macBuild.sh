@@ -1,3 +1,5 @@
+#!/bin/bash
+SET npm_config_arch=x64
 
 python script/bootstrap.py -v \
 --target_arch=x64 \
