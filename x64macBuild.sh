@@ -8,5 +8,5 @@ python script/bootstrap.py -v \
 --libcc_static_library_path=../libchromiumcontent/dist/main/static_library 
 
 python script/update.py
-python script/build.py
+python script/build.py -c R
 python script/create-dist.py

@@ -325,7 +325,9 @@ bool Converter<blink::WebTouchEvent>::FromV8(
   std::vector<blink::WebTouchPoint> touches;
   if (dict.Get("touches", &touches)) {
     out->touchesLength = touches.size();
-    for (size_t i=0; i<touches.size(); ++i) {
+    if (out->touchesLength > blink::WebTouchEvent::touchesLengthCap)
+      out->touchesLength = blink::WebTouchEvent::touchesLengthCap;
+    for (size_t i=0; i<out->touchesLength; ++i) {
       out->touches[i] = touches[i];
     }
   }
